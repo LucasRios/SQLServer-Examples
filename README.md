@@ -14,31 +14,44 @@ A curated set of SQL Server solutions that go beyond standard T-SQL — includin
 
 ---
 
-## Examples
+## Projects
 
 ### CLR Extensions (C# inside SQL Server)
 
 | Project | Description |
 |---|---|
-| [SQLServerDLL-Procedure-Assincrona](https://github.com/LucasRios/SQLServerDLL-Procedure-Assincrona) | Execute stored procedures asynchronously from T-SQL — runs background tasks without blocking the calling transaction |
-| [SQLServerDLL-GET-POST-API](https://github.com/LucasRios/SQLServerDLL-GET-POST-API) | Make HTTP GET/POST calls directly from SQL Server — enables T-SQL to consume REST APIs |
-| [SQLServerDLL-OpenAITraduzirAudio](https://github.com/LucasRios/SQLServerDLL-OpenAITraduzirAudio) | Transcribe and translate audio files using OpenAI Whisper, triggered from SQL Server |
-
-### Administration & Performance
-
-| Project | Description |
-|---|---|
-| [SQLServer-Comandos](https://github.com/LucasRios/SQLServer-Comandos) | Production DBA scripts — index fragmentation analysis, missing indexes, CPU consumption, table sizing, and automated maintenance |
+| [SQLProcedureAssincrona](SQLProcedureAssincrona/) | Execute stored procedures asynchronously from T-SQL — dispatches background tasks via ThreadPool without blocking the calling transaction |
+| [SQLPostAPI](SQLPostAPI/) | Make HTTP GET/POST calls directly from SQL Server — also handles FTP upload, WebDAV upload, and multipart/form-data (Facebook Graph API) |
+| [OpenAITraduzirAudio](OpenAITraduzirAudio/) | Transcribe audio files using OpenAI Whisper and store results via WebDAV — triggered as a SQL Server stored procedure |
 
 ---
 
 ## Patterns Covered
 
-- **CLR integration** — extending SQL Server with compiled C# assemblies
-- **Async execution** — background task patterns that avoid transaction blocking
-- **External HTTP calls** — REST API consumption from stored procedures
-- **AI integration** — OpenAI API invocation from inside the database layer
-- **Performance tuning** — index analysis, fragmentation repair, query diagnosis
+- **CLR integration** — extending SQL Server with compiled C# assemblies (`PERMISSION_SET = UNSAFE`)
+- **Async execution** — ThreadPool-based background task pattern that avoids transaction blocking
+- **External HTTP calls** — REST API consumption (GET/POST), file download, WebDAV and FTP upload
+- **AI integration** — OpenAI Whisper audio transcription invoked from a T-SQL stored procedure
+- **Multipart uploads** — building `multipart/form-data` requests in C# for third-party APIs (e.g. Facebook Graph)
+
+## Security Notes
+
+All sensitive values (API keys, server IPs, database credentials, FTP/WebDAV passwords) are read from **environment variables** — never hardcoded. Configure them in the Windows service environment before loading the assembly:
+
+```sql
+-- Example: setting an environment variable for the SQL Server service account
+-- (run in the OS, not in SQL Server)
+-- setx SQL_CLR_SERVER   "your-server-hostname"
+-- setx SQL_CLR_USER     "sql-login"
+-- setx SQL_CLR_PASSWORD "sql-password"
+-- setx OPENAI_API_KEY   "sk-..."
+-- setx WEBDAV_USER      "dav-user"
+-- setx WEBDAV_PASSWORD  "dav-password"
+-- setx FTP_USER         "ftp-user"
+-- setx FTP_PASSWORD     "ftp-password"
+```
+
+Files excluded from this repo by `.gitignore`: `*.pfx`, `*.snk` (signing keys and certificates).
 
 ---
 

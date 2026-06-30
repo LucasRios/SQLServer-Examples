@@ -14,6 +14,17 @@ A curated set of SQL Server solutions that go beyond standard T-SQL — includin
 
 ---
 
+## Project Structure
+
+```
+SQLServer-Examples/
+├── SQLProcedureAssincrona/  ← C# CLR — async background procedure execution
+├── SQLPostAPI/              ← C# CLR — HTTP, FTP, and WebDAV from T-SQL
+└── OpenAITraduzirAudio/     ← C# CLR — Whisper audio transcription via SQL
+```
+
+---
+
 ## Projects
 
 ### CLR Extensions (C# inside SQL Server)
@@ -23,6 +34,37 @@ A curated set of SQL Server solutions that go beyond standard T-SQL — includin
 | [SQLProcedureAssincrona](SQLProcedureAssincrona/) | Execute stored procedures asynchronously from T-SQL — dispatches background tasks via ThreadPool without blocking the calling transaction |
 | [SQLPostAPI](SQLPostAPI/) | Make HTTP GET/POST calls directly from SQL Server — also handles FTP upload, WebDAV upload, and multipart/form-data (Facebook Graph API) |
 | [OpenAITraduzirAudio](OpenAITraduzirAudio/) | Transcribe audio files using OpenAI Whisper and store results via WebDAV — triggered as a SQL Server stored procedure |
+
+---
+
+## Getting Started
+
+**Prerequisites:**
+- SQL Server 2019+ with CLR integration enabled
+- Visual Studio 2019+ for building the `.dll` assemblies
+- SQL Server configured with `TRUSTWORTHY ON` or a certificate for `UNSAFE` assemblies
+
+**Enable CLR integration** (run once in SQL Server):
+
+```sql
+sp_configure 'clr enabled', 1;
+RECONFIGURE;
+```
+
+**Deploy an assembly** (example for SQLPostAPI):
+
+```sql
+-- Register the compiled DLL as a SQL Server assembly
+CREATE ASSEMBLY SQLPostAPI
+FROM 'C:\path\to\SQLPostAPI.dll'
+WITH PERMISSION_SET = UNSAFE;
+
+-- Create the stored procedure wrapper
+CREATE PROCEDURE dbo.SQLApiPost (@url NVARCHAR(500), @body NVARCHAR(MAX), @result NVARCHAR(MAX) OUTPUT)
+AS EXTERNAL NAME SQLPostAPI.[SQLPostAPI.UserDefinedFunctions].SQLApiPost;
+```
+
+Set environment variables before starting the SQL Server service (see Security Notes below).
 
 ---
 
